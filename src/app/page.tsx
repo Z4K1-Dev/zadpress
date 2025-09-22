@@ -5,31 +5,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { pluginManager } from '@/lib/plugin-manager';
 import { Settings, BarChart3, Search, MapPin, Tag, FileText } from 'lucide-react';
 
 export default function Home() {
-  const [loadedPlugins, setLoadedPlugins] = useState<string[]>([]);
-  const [pluginStatus, setPluginStatus] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    // Update loaded plugins periodically
-    const updatePluginStatus = () => {
-      const loaded = pluginManager.getLoadedPlugins();
-      setLoadedPlugins(loaded);
-      
-      const status: Record<string, boolean> = {};
-      loaded.forEach(plugin => {
-        status[plugin] = pluginManager.isPluginLoaded(plugin);
-      });
-      setPluginStatus(status);
-    };
-
-    updatePluginStatus();
-    const interval = setInterval(updatePluginStatus, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
+  const [loadedPlugins, setLoadedPlugins] = useState<string[]>([
+    'google-analytics',
+    'seo-tools', 
+    'sitemap-generator',
+    'rich-snippet',
+    'google-local',
+    'keyword-tagging'
+  ]);
+  
+  const [pluginStatus, setPluginStatus] = useState<Record<string, boolean>>({
+    'google-analytics': true,
+    'seo-tools': true,
+    'sitemap-generator': true,
+    'rich-snippet': true,
+    'google-local': true,
+    'keyword-tagging': true
+  });
 
   const getPluginIcon = (pluginName: string) => {
     switch (pluginName) {
@@ -158,17 +153,17 @@ export default function Home() {
           <TabsContent value="admin" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Plugin Administration</CardTitle>
+                <CardTitle>Plugin Demo</CardTitle>
                 <CardDescription>
-                  Manage your plugins, configure settings, and monitor performance
+                  Try our interactive demo with all 6 SEO plugins
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button asChild className="flex-1">
-                    <a href="/admin/plugins">
+                    <a href="/plugins-demo">
                       <Settings className="mr-2 h-4 w-4" />
-                      Manage Plugins
+                      View Demo
                     </a>
                   </Button>
                   <Button variant="outline" className="flex-1">
@@ -178,10 +173,10 @@ export default function Home() {
                 </div>
                 <div className="text-sm text-muted-foreground">
                   <p>
-                    Currently loaded: {loadedPlugins.length} plugins
+                    Interactive demo with: {loadedPlugins.length} plugins
                   </p>
                   <p>
-                    Active plugins: {Object.values(pluginStatus).filter(Boolean).length}
+                    Try enabling/disabling plugins in real-time!
                   </p>
                 </div>
               </CardContent>
