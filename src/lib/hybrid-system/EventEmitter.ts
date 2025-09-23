@@ -1,10 +1,10 @@
 import { PluginEvent } from './types';
 
 export class PluginEventEmitter {
-  private listeners: Map<string, Function[]> = new Map();
-  private onceListeners: Map<string, Function[]> = new Map();
+  private listeners: Map<string, ((data?: any) => any)[]> = new Map();
+  private onceListeners: Map<string, ((data?: any) => any)[]> = new Map();
   private eventHistory: PluginEvent[] = [];
-  private anyListeners: Function[] = [];
+  private anyListeners: ((event: PluginEvent) => any)[] = [];
   private eventsEmittedCount: number = 0;
   
   constructor(private maxHistory: number = 1000) {}
@@ -12,7 +12,7 @@ export class PluginEventEmitter {
   /**
    * Register event listener
    */
-  on(event: string, callback: Function): void {
+  on(event: string, callback: (data?: any) => any): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);
     }
@@ -26,7 +26,7 @@ export class PluginEventEmitter {
   /**
    * Register one-time event listener
    */
-  once(event: string, callback: Function): void {
+  once(event: string, callback: (data?: any) => any): void {
     if (!this.onceListeners.has(event)) {
       this.onceListeners.set(event, []);
     }
@@ -40,7 +40,7 @@ export class PluginEventEmitter {
   /**
    * Register listener for any event
    */
-  onAny(callback: Function): void {
+  onAny(callback: (event: PluginEvent) => any): void {
     this.anyListeners.push(callback);
     
     if (this.isDebugMode()) {
@@ -51,7 +51,7 @@ export class PluginEventEmitter {
   /**
    * Remove event listener
    */
-  off(event: string, callback: Function): void {
+  off(event: string, callback: (data?: any) => any): void {
     // Remove from regular listeners
     const regularListeners = this.listeners.get(event);
     if (regularListeners) {

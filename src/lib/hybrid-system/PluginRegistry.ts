@@ -1,5 +1,5 @@
 import { PluginMetadata } from './types';
-import { BasePlugin } from '../../plugins/base-plugin';
+import { BasePlugin } from '../../src/plugins/base-plugin';
 
 export class PluginRegistry {
   private plugins: Map<string, PluginMetadata> = new Map();

@@ -1,7 +1,7 @@
 import { PluginEventEmitter } from './EventEmitter';
 import { HookManager } from './HookManager';
 import { PluginRegistry } from './PluginRegistry';
-import { BasePlugin } from '../../plugins/base-plugin';
+import { BasePlugin } from '../../../plugins/base-plugin';
 import { PluginConfig, HybridSystemStatus, SystemConfig } from './types';
 
 export class HybridPluginManager {

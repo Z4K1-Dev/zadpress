@@ -109,7 +109,7 @@ When developing hybrid plugin systems, it's essential to consider factors such a
         density: parseFloat(density.toFixed(2)),
         count,
         recommended: density >= 0.5 && density <= 3,
-        competition: Math.random() > 0.6 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low',
+        competition: (Math.random() > 0.6 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low') as 'low' | 'medium' | 'high',
         volume: Math.floor(Math.random() * 10000) + 500
       };
     });

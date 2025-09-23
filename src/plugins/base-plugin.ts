@@ -37,8 +37,8 @@ export abstract class BasePlugin {
   public hookManager: HookManager;
   public pluginRegistry: PluginRegistry;
   public hybridManager: HybridPluginManager;
-  private eventListeners: Map<string, Function[]> = new Map();
-  private registeredHooks: Map<string, Function> = new Map();
+  private eventListeners: Map<string, ((data?: any) => any)[]> = new Map();
+  private registeredHooks: Map<string, (...args: any[]) => any> = new Map();
   
   constructor(config: PluginConfig) {
     this.config = config;
@@ -76,7 +76,7 @@ export abstract class BasePlugin {
   abstract unload(): Promise<void>;
   
   // Event Listener Methods
-  protected on(eventName: string, listener: Function): void {
+  protected on(eventName: string, listener: (data?: any) => any): void {
     if (!this.eventListeners.has(eventName)) {
       this.eventListeners.set(eventName, []);
     }
@@ -86,7 +86,7 @@ export abstract class BasePlugin {
     this.eventEmitter.on(eventName, listener);
   }
   
-  protected off(eventName: string, listener: Function): void {
+  protected off(eventName: string, listener: (data?: any) => any): void {
     const listeners = this.eventListeners.get(eventName);
     if (listeners) {
       const index = listeners.indexOf(listener);
@@ -116,7 +116,7 @@ export abstract class BasePlugin {
     }
   }
   
-  protected once(eventName: string, listener: Function): void {
+  protected once(eventName: string, listener: (data?: any) => any): void {
     const onceWrapper = (data: any) => {
       listener(data);
       this.off(eventName, onceWrapper);
@@ -125,9 +125,9 @@ export abstract class BasePlugin {
   }
   
   // Hook Registration Methods
-  protected addHook(hookName: string, callback: Function, priority: number = 10): void {
+  protected addHook(hookName: string, callback: (...args: any[]) => any, priority: number = 10): void {
     this.registeredHooks.set(hookName, callback);
-    this.hookManager.addHook(hookName, callback, priority);
+    this.hookManager.addAction(hookName, callback, priority, this.config.name);
     console.log(`Plugin ${this.config.name} registered hook: ${hookName} with priority ${priority}`);
   }
   
@@ -141,11 +141,11 @@ export abstract class BasePlugin {
   }
   
   protected executeHook(hookName: string, data: any, context?: any): any {
-    return this.hookManager.executeHook(hookName, data, context);
+    return this.hookManager.applyFilters(hookName, data, context);
   }
   
   protected filterHook(hookName: string, data: any, context?: any): any {
-    return this.hookManager.filterHook(hookName, data, context);
+    return this.hookManager.applyFilters(hookName, data, context);
   }
   
   protected hasHook(hookName: string): boolean {
@@ -198,19 +198,24 @@ export abstract class BasePlugin {
   }
   
   protected getHookCount(hookName: string): number {
-    return this.hookManager.getHookCount(hookName);
+    const hooks = this.hookManager.getHooks(hookName);
+    return hooks.length;
   }
   
-  protected getHooksByPriority(hookName: string): Array<{callback: Function, priority: number}> {
-    return this.hookManager.getHooksByPriority(hookName);
+  protected getHooksByPriority(hookName: string): Array<{callback: (...args: any[]) => any, priority: number}> {
+    const hooks = this.hookManager.getHooks(hookName);
+    return hooks.map(hook => ({
+      callback: hook.callback,
+      priority: hook.priority
+    }));
   }
   
   protected clearHooks(hookName?: string): void {
     if (hookName) {
-      this.hookManager.clearHooks(hookName);
+      this.hookManager.removePluginHooks(this.config.name);
       this.registeredHooks.delete(hookName);
     } else {
-      this.hookManager.clearAllHooks();
+      this.hookManager.removePluginHooks(this.config.name);
       this.registeredHooks.clear();
     }
   }
@@ -254,7 +259,7 @@ export abstract class BasePlugin {
   
   protected enableDebugMode(enabled: boolean = true): void {
     this.eventEmitter.enableDebugMode(enabled);
-    this.hookManager.enableDebugMode(enabled);
+    // HookManager doesn't have enableDebugMode method
     this.pluginRegistry.enableDebugMode(enabled);
     this.hybridManager.enableDebugMode(enabled);
   }
@@ -262,7 +267,7 @@ export abstract class BasePlugin {
   protected getPerformanceMetrics(): any {
     return {
       events: this.eventEmitter.getPerformanceMetrics(),
-      hooks: this.hookManager.getPerformanceMetrics(),
+      hooks: this.hookManager.getStatus(),
       plugins: this.pluginRegistry.getPerformanceMetrics(),
       system: this.hybridManager.getPerformanceMetrics()
     };
@@ -503,24 +508,24 @@ export abstract class BasePlugin {
   }
   
   // Plugin lifecycle hooks
-  protected onBeforeLoad(callback: Function): void {
+  protected onBeforeLoad(callback: (data?: any) => any): void {
     this.on('plugin:load:before', callback);
   }
   
-  protected onAfterLoad(callback: Function): void {
+  protected onAfterLoad(callback: (data?: any) => any): void {
     this.on('plugin:load:after', callback);
   }
   
-  protected onBeforeUnload(callback: Function): void {
+  protected onBeforeUnload(callback: (data?: any) => any): void {
     this.on('plugin:unload:before', callback);
   }
   
-  protected onAfterUnload(callback: Function): void {
+  protected onAfterUnload(callback: (data?: any) => any): void {
     this.on('plugin:unload:after', callback);
   }
   
   // Error handling hooks
-  protected onError(callback: Function): void {
+  protected onError(callback: (error: Error) => any): void {
     this.on('plugin:load:error', callback);
     this.on('plugin:unload:error', callback);
     this.on('plugin:migration:error', callback);
@@ -561,5 +566,22 @@ export abstract class BasePlugin {
     script.type = 'application/ld+json';
     script.text = JSON.stringify(data);
     document.head.appendChild(script);
+  }
+  
+  // Getter methods for hybrid system compatibility
+  protected getEventEmitter(): PluginEventEmitter {
+    return this.eventEmitter;
+  }
+  
+  protected getHookManager(): HookManager {
+    return this.hookManager;
+  }
+  
+  protected getPluginRegistry(): PluginRegistry {
+    return this.pluginRegistry;
+  }
+  
+  protected getHybridManager(): HybridPluginManager {
+    return this.hybridManager;
   }
 }

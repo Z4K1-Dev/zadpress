@@ -14,10 +14,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:hybrid": "jest src/lib/hybrid-system/__tests__/",
-    "test:bun": "bun test",
-    "test:bun:watch": "bun test --watch",
-    "test:fast": "bun test src/lib/hybrid-system/__tests__/EventEmitter.test.ts"
+    "test:hybrid": "jest src/lib/hybrid-system/__tests__/"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -60,12 +57,9 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "core-js": "^3.45.1",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.2",
-    "glob": "^11.0.3",
-    "highlight.js": "^11.11.1",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.525.0",
     "next": "^15.5.3",
@@ -79,7 +73,7 @@
     "react-hook-form": "^7.60.0",
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "^3.0.3",
-    "react-syntax-highlighter": "^15.6.6",
+    "react-syntax-highlighter": "^5.8.0",
     "recharts": "^2.15.4",
     "sharp": "^0.34.3",
     "socket.io": "^4.8.1",

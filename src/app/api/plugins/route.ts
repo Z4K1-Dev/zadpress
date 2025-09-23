@@ -94,12 +94,59 @@ const defaultPlugins: PluginConfig[] = [
   }
 ];
 
+// Initialize default plugins in database
+async function initializeDefaultPlugins() {
+  const initializedPlugins: PluginConfig[] = [];
+  
+  for (const plugin of defaultPlugins) {
+    const createdPlugin = await db.plugin.create({
+      data: {
+        name: plugin.name,
+        description: plugin.description,
+        version: plugin.version,
+        isActive: plugin.isActive,
+        settings: JSON.stringify(plugin.settings || {})
+      }
+    });
+    
+    initializedPlugins.push({
+      name: createdPlugin.name,
+      description: createdPlugin.description,
+      version: createdPlugin.version,
+      isActive: createdPlugin.isActive,
+      settings: createdPlugin.settings ? JSON.parse(createdPlugin.settings) : {}
+    });
+  }
+  
+  return initializedPlugins;
+}
+
 // GET /api/plugins - Get all plugins
 export async function GET(request: NextRequest) {
   try {
-    // In a real app, you would fetch from database
-    // For now, return default plugins
-    return NextResponse.json(defaultPlugins);
+    // Fetch plugins from database
+    const plugins = await db.plugin.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    // If no plugins in database, initialize with default plugins
+    if (plugins.length === 0) {
+      const initializedPlugins = await initializeDefaultPlugins();
+      return NextResponse.json(initializedPlugins);
+    }
+
+    // Transform database plugins to frontend format
+    const formattedPlugins = plugins.map(plugin => ({
+      name: plugin.name,
+      description: plugin.description,
+      version: plugin.version,
+      isActive: plugin.isActive,
+      settings: plugin.settings ? JSON.parse(plugin.settings) : {}
+    }));
+
+    return NextResponse.json(formattedPlugins);
   } catch (error) {
     console.error('Error fetching plugins:', error);
     return NextResponse.json(
@@ -122,27 +169,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find the plugin
-    const pluginIndex = defaultPlugins.findIndex(p => p.name === name);
-    if (pluginIndex === -1) {
+    // Check if plugin exists in database
+    const existingPlugin = await db.plugin.findUnique({
+      where: { name }
+    });
+
+    if (!existingPlugin) {
       return NextResponse.json(
         { error: 'Plugin not found' },
         { status: 404 }
       );
     }
 
-    // Update plugin configuration
-    const updatedPlugin = {
-      ...defaultPlugins[pluginIndex],
-      isActive: isActive !== undefined ? isActive : defaultPlugins[pluginIndex].isActive,
-      settings: settings || defaultPlugins[pluginIndex].settings
+    // Update plugin in database
+    const updatedPlugin = await db.plugin.update({
+      where: { name },
+      data: {
+        isActive: isActive !== undefined ? isActive : existingPlugin.isActive,
+        settings: settings ? JSON.stringify(settings) : existingPlugin.settings,
+        updatedAt: new Date()
+      }
+    });
+
+    // Transform to frontend format
+    const formattedPlugin = {
+      name: updatedPlugin.name,
+      description: updatedPlugin.description,
+      version: updatedPlugin.version,
+      isActive: updatedPlugin.isActive,
+      settings: updatedPlugin.settings ? JSON.parse(updatedPlugin.settings) : {}
     };
 
-    // In a real app, save to database
-    // For now, update in memory (this won't persist across server restarts)
-    defaultPlugins[pluginIndex] = updatedPlugin;
-
-    return NextResponse.json(updatedPlugin);
+    return NextResponse.json(formattedPlugin);
   } catch (error) {
     console.error('Error updating plugin:', error);
     return NextResponse.json(

@@ -17,7 +17,7 @@ export type {
 } from './types';
 
 // Re-export BasePlugin for convenience
-export { BasePlugin, PluginConfig, PluginSettings } from '../../plugins/base-plugin';
+export { BasePlugin } from '../../plugins/base-plugin';
 
 // Version
 export const HYBRID_SYSTEM_VERSION = '1.0.0';

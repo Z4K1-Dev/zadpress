@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { pluginManager } from '@/plugins/base-plugin';
+import { pluginManager } from '@/src/plugins/base-plugin';
 
 // Import all plugins
 import { GoogleAnalyticsPlugin } from '@/plugins/google-analytics';
@@ -21,6 +21,9 @@ pluginManager.registerPlugin('keyword-tagging', KeywordTaggingPlugin);
 if (typeof window !== 'undefined') {
   (window as any).pluginManager = pluginManager;
 }
+
+// Export the plugin manager for direct use
+export { pluginManager };
 
 // Hook for loading plugins
 export const usePlugins = () => {

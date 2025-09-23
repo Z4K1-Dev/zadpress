@@ -9,7 +9,7 @@ export class HookManager {
    */
   addFilter(
     hookName: string, 
-    callback: Function, 
+    callback: (...args: any[]) => any, 
     priority: number = 10,
     pluginName: string = 'unknown'
   ): void {
@@ -46,7 +46,7 @@ export class HookManager {
    */
   addAction(
     hookName: string, 
-    callback: Function, 
+    callback: (...args: any[]) => any, 
     priority: number = 10,
     pluginName: string = 'unknown'
   ): void {
@@ -157,7 +157,7 @@ export class HookManager {
   /**
    * Remove specific hook
    */
-  removeHook(hookName: string, callback: Function): void {
+  removeHook(hookName: string, callback: (...args: any[]) => any): void {
     const hookCallbacks = this.hooks.get(hookName);
     if (hookCallbacks) {
       const index = hookCallbacks.findIndex(hc => hc.callback === callback);

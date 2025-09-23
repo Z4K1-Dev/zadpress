@@ -7,7 +7,7 @@ export interface PluginEvent {
 }
 
 export interface HookCallback {
-  callback: Function;
+  callback: (...args: any[]) => any;
   priority: number;
   pluginName: string;
 }

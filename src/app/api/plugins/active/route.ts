@@ -41,8 +41,11 @@ export async function POST(request: NextRequest) {
       // Update existing plugin
       activePlugins[existingIndex] = {
         ...activePlugins[existingIndex],
-        isActive: isActive !== undefined ? isActive : activePlugins[existingIndex].isActive,
-        config: config || activePlugins[existingIndex].config
+        config: {
+          ...activePlugins[existingIndex].config,
+          isActive: isActive !== undefined ? isActive : activePlugins[existingIndex].config.isActive,
+          ...(config || {})
+        }
       };
     } else {
       // Add new plugin

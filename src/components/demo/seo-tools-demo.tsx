@@ -66,7 +66,7 @@ export function SEOToolsDemo({ isActive }: SEOToolsDemoProps) {
   };
 
   const generateMetaTags = () => {
-    const tags = [];
+    const tags: string[] = [];
     
     if (seoConfig.title) tags.push(`<title>${seoConfig.title}</title>`);
     if (seoConfig.description) tags.push(`<meta name="description" content="${seoConfig.description}">`);
